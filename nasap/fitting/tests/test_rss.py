@@ -68,5 +68,26 @@ def test_rss_calculation_with_mock(sim_return, ydata):
     assert rss == np.sum((ydata - mock_simulating_func.return_value)**2)
 
 
+def test_ydata_with_row_of_nan():
+    mock_sim_func = Mock()
+    mock_sim_func.return_value = np.array(
+        [[0.0, 0.0], 
+         [0.0, 0.0], 
+         [0.0, 0.0]])
+
+    tdata = np.array([0.0, 1.0, 2.0])
+    ydata = np.array(
+        [[0.1, 0.1], 
+         [0.1, np.nan],  # Introduce a NaN value
+         [0.1, 0.1]])
+    
+    y0 = np.array([0.0, 0.0])
+    params_d = {'k': 1}
+
+    rss = calc_simulation_rss(tdata, ydata, mock_sim_func, y0, params_d)
+
+    assert rss == 0.1**2 * 5
+
+
 if __name__ == '__main__':
     pytest.main(['-v', __file__])

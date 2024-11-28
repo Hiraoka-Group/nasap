@@ -23,8 +23,7 @@ def calc_simulation_rss(
         Time points of the data.
     ydata : npt.NDArray, shape (n, m)
         Data to be compared with the simulation.
-        If there are NaN values in the data, the corresponding rows
-        will be removed.
+        NaN values are ignored.
     simulating_func : Callable
         Function that simulates the system. 
 
@@ -44,14 +43,15 @@ def calc_simulation_rss(
     float
         The residual sum of squares (RSS) between the data and the 
         simulation.
+
+    Notes
+    -----
+    `ydata` must have the same shape as the output of `simulating_func`.
+    In the case where some species are not measured, the corresponding
+    values in `ydata` should be NaN, to keep the shape consistent.
     """
     ysim = simulating_func(tdata, y0, **params_d)
 
     # Calculate the residuals
-    residuals = ysim - ydata
-    # Remove row with NaN
-    residuals = residuals[~np.isnan(residuals).any(axis=1)]
-    # Flatten the residuals to 1D array
-    residuals = residuals.ravel()
-
-    return np.sum(residuals**2)
+    residuals = ysim - ydata  # can include NaN values
+    return np.nansum(residuals**2)  # ignore NaN values
