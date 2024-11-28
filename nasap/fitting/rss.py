@@ -6,10 +6,10 @@ import numpy.typing as npt
 
 
 def calc_simulation_rss(
-        params_d: Mapping[str, float],
+        tdata: npt.NDArray, ydata: npt.NDArray, 
         simulating_func: Callable[
             Concatenate[npt.NDArray, npt.NDArray, ...], npt.NDArray],
-        tdata: npt.NDArray, ydata: npt.NDArray, y0: npt.NDArray,
+        y0: npt.NDArray, params_d: Mapping[str, float],
         ) -> float:
     ysim = simulating_func(tdata, y0, **params_d)
 

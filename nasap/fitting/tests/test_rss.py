@@ -21,7 +21,7 @@ def test_zero_rss():
     ydata = simulating_func(tdata, y0, k)
     params_d = {'k': k}
 
-    rss = calc_simulation_rss(params_d, simulating_func, tdata, ydata, y0)
+    rss = calc_simulation_rss(tdata, ydata, simulating_func, y0, params_d)
 
     assert rss == 0.0
 
@@ -41,7 +41,7 @@ def test_non_zero_rss():
     ydata[0, 0] += 0.1  # Introduce a small error
     params_d = {'k': k}
 
-    rss = calc_simulation_rss(params_d, simulating_func, tdata, ydata, y0)
+    rss = calc_simulation_rss(tdata, ydata, simulating_func, y0, params_d)
 
     assert rss > 0.0
 
@@ -63,7 +63,7 @@ def test_rss_calculation_with_mock(sim_return, ydata):
     y0 = np.array([1.0, 0.0])
     params_d = {'k': 1}
 
-    rss = calc_simulation_rss(params_d, mock_simulating_func, tdata, ydata, y0)
+    rss = calc_simulation_rss(tdata, ydata, mock_simulating_func, y0, params_d)
 
     assert rss == np.sum((ydata - mock_simulating_func.return_value)**2)
 
