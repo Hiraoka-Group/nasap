@@ -18,10 +18,11 @@ def test_one_reaction():
     k = 1
 
     sol = solve_ivp(ode_rhs, (t[0], t[-1]), y0, args=(k,), dense_output=True)
-    expected = sol.sol(t)
+    expected = sol.sol(t).T
 
     y = simulating_func(t, y0, k)
 
+    assert y.shape == (len(t), len(y0))
     np.testing.assert_allclose(y, expected)
 
 
@@ -38,10 +39,11 @@ def test_two_reactions():
     k2 = 1
 
     sol = solve_ivp(ode_rhs, (t[0], t[-1]), y0, args=(k1, k2), dense_output=True)
-    expected = sol.sol(t)
+    expected = sol.sol(t).T
 
     y = simulating_func(t, y0, k1, k2)
 
+    assert y.shape == (len(t), len(y0))
     np.testing.assert_allclose(y, expected)
 
 
@@ -58,10 +60,11 @@ def test_reversible_reaction():
     k2 = 1
 
     sol = solve_ivp(ode_rhs, (t[0], t[-1]), y0, args=(k1, k2), dense_output=True)
-    expected = sol.sol(t)
+    expected = sol.sol(t).T
 
     y = simulating_func(t, y0, k1, k2)
 
+    assert y.shape == (len(t), len(y0))
     np.testing.assert_allclose(y, expected)
 
 

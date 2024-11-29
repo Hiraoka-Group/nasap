@@ -62,6 +62,6 @@ def make_simulating_func_from_ode_rhs(
             ode_rhs_with_fixed_parameters, (t[0], t[-1]), y0,
             dense_output=True)
 
-        return sol.sol(t)
+        return sol.sol(t).T
 
     return simulating_func
