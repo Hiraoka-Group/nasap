@@ -1,1 +1,2 @@
+from .objective_func import make_objective_func_from_simulating_func
 from .rss import calc_simulation_rss
