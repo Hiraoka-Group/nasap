@@ -3,16 +3,25 @@ Module for making simulating functions from ODE right-hand side functions.
 """
 
 from collections.abc import Callable
-from typing import Concatenate, ParamSpec
+from typing import Concatenate, Generic, ParamSpec, Protocol
 
 import numpy.typing as npt
 from scipy.integrate import solve_ivp
 
 _P = ParamSpec('_P')
 
+
+class SimulatingFunc(Generic[_P], Protocol):
+    def __call__(
+            self, t: npt.NDArray, y0: npt.NDArray,
+            *args: _P.args, **kwargs: _P.kwargs
+            ) -> npt.NDArray:
+        ...
+
+
 def make_simulating_func_from_ode_rhs(
         ode_rhs: Callable[Concatenate[float, npt.NDArray, _P], npt.NDArray]
-        ) -> Callable[Concatenate[npt.NDArray, npt.NDArray, _P], npt.NDArray]:
+        ) -> SimulatingFunc[_P]:
     """Make a simulating function from an ODE right-hand side function.
 
     Resulting simulating function can be called with time points, 
