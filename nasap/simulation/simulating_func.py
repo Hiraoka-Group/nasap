@@ -29,10 +29,10 @@ def make_simulating_func_from_ode_rhs(
             ``ode_rhs(t, y, *args, **kwargs) -> dydt``
 
         where ``t`` is the time (float), ``y`` is the dependent
-        variable (1-D array, shape (n,)), ``args`` and ``kwargs``
+        variable (1-D array, shape (m,)), ``args`` and ``kwargs``
         are the parameters of the ODE right-hand side function, and
         ``dydt`` is the derivative of the dependent variable (1-D
-        array, shape (n,)). The names of ``t`` and ``y`` can be
+        array, shape (m,)). The names of ``t`` and ``y`` can be
         different.
 
     Returns
@@ -43,12 +43,12 @@ def make_simulating_func_from_ode_rhs(
         
             ``simulating_func(t, y0, *args, **kwargs) -> y``
     
-        where ``t`` is the time points (1-D array, shape (m,)),
+        where ``t`` is the time points (1-D array, shape (n,)),
         ``y0`` is the initial values of the dependent variables
-        (1-D array, shape (n,)), ``args`` and ``kwargs`` are the
+        (1-D array, shape (m,)), ``args`` and ``kwargs`` are the
         parameters of the ODE right-hand side function, and ``y``
         is the dependent variables at the time points (2-D array,
-        shape (m, n)).
+        shape (n, m)).
     """
     def simulating_func(
             t: npt.NDArray, y0: npt.NDArray,
