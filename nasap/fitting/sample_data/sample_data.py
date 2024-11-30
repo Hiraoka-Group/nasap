@@ -1,26 +1,26 @@
-from types import MappingProxyType
-from typing import Generic, TypeVar
+from typing import Generic, NamedTuple, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-from frozendict import frozendict
 
-_T = TypeVar('_T')
+from nasap.simulation import SimulatingFunc
+
+_T = TypeVar('_T', bound=SimulatingFunc)
+_S = TypeVar('_S', bound=NamedTuple)
 
 
-class SampleData(Generic[_T]):
+class SampleData(Generic[_T, _S]):
     """Immutable class for sample data."""
     def __init__(
             self, tdata: npt.ArrayLike, ydata: npt.ArrayLike,
             simulating_func: _T,
-            params: dict[str, float] | None = None) -> None:
+            params: _S) -> None:
+        
         self._tdata = np.array(tdata)
         self._ydata = np.array(ydata)
         self._simulating_func = simulating_func
 
-        if params is None:
-            params = {}
-        self._params = frozendict(params)
+        self._params = params
     
         self._tdata.flags.writeable = False
         self._ydata.flags.writeable = False
@@ -41,9 +41,9 @@ class SampleData(Generic[_T]):
         return self._simulating_func
     
     @property
-    def params(self) -> MappingProxyType[str, float]:
-        """Read-only dictionary of parameters."""
-        return MappingProxyType(self._params)
+    def params(self) -> _S:
+        """NamedTuple of parameters. (Read-only)"""
+        return self._params
 
     @property
     def y0(self) -> npt.NDArray:
