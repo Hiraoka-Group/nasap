@@ -1,42 +1,61 @@
-from typing import Generic, NamedTuple, TypeVar
+from collections.abc import Callable
+from typing import (Concatenate, Generic, NamedTuple, ParamSpec, TypeAlias,
+                    TypeVar)
 
 import numpy as np
 import numpy.typing as npt
 
-from nasap.simulation import SimulatingFunc
+from nasap.simulation import SimulatingFunc, make_simulating_func_from_ode_rhs
 
-_T = TypeVar('_T', bound=SimulatingFunc)
+_P = ParamSpec('_P')
 _S = TypeVar('_S', bound=NamedTuple)
 
 
-class SampleData(Generic[_T, _S]):
+class SampleData(Generic[_P, _S]):
     """Immutable class for sample data."""
     def __init__(
-            self, tdata: npt.ArrayLike, ydata: npt.ArrayLike,
-            simulating_func: _T,
-            params: _S) -> None:
-        
-        self._tdata = np.array(tdata)
-        self._ydata = np.array(ydata)
-        self._simulating_func = simulating_func
-
+            self, ode_rhs: Callable[
+                Concatenate[float, npt.NDArray, _P], npt.NDArray], 
+            t: npt.ArrayLike, y0: npt.ArrayLike,
+            params: _S
+            ) -> None:
+        self._ode_rhs = ode_rhs
+        self._t = np.array(t)
+        self._y0 = np.array(y0)
         self._params = params
-    
-        self._tdata.flags.writeable = False
+
+        self._simulating_func = make_simulating_func_from_ode_rhs(ode_rhs)
+        self._ydata = self.simulating_func(self.t, self.y0, *params)
+        assert np.array_equal(self._ydata[0], self._y0)
+
+        # Make np.ndarray read-only
+        self._t.flags.writeable = False
+        self._y0.flags.writeable = False
         self._ydata.flags.writeable = False
 
     @property
-    def tdata(self) -> npt.NDArray:
+    def t(self) -> npt.NDArray:
         """Time points of the data. (Read-only)"""
-        return self._tdata
+        return self._t
     
     @property
-    def ydata(self) -> npt.NDArray:
+    def y(self) -> npt.NDArray:
         """Data to be compared with the simulation. (Read-only)"""
         return self._ydata
+
+    @property
+    def y0(self) -> npt.NDArray:
+        """Initial conditions. (Read-only)"""
+        return self._y0
     
     @property
-    def simulating_func(self) -> _T:
+    def ode_rhs(self) -> Callable[
+            Concatenate[float, npt.NDArray, _P], npt.NDArray]:
+        """ODE right-hand side function."""
+        return self._ode_rhs
+    
+    @property
+    def simulating_func(self) -> SimulatingFunc[_P]:
         """Function that simulates the system."""
         return self._simulating_func
     
@@ -44,8 +63,3 @@ class SampleData(Generic[_T, _S]):
     def params(self) -> _S:
         """NamedTuple of parameters. (Read-only)"""
         return self._params
-
-    @property
-    def y0(self) -> npt.NDArray:
-        """Initial conditions. (Read-only)"""
-        return self.ydata[0]
