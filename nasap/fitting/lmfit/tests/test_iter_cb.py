@@ -6,71 +6,58 @@ from lmfit import Minimizer, Parameters
 from nasap.fitting.lmfit import (IterationRecord,
                                  make_iter_cb_for_lmfit_minimizer,
                                  make_objective_func_for_lmfit_minimizer)
-from nasap.simulation import make_simulating_func_from_ode_rhs
+from nasap.fitting.sample_data import get_a_to_b_sample
 
 
 def test_use_for_lmfit_minimizer():
     # A -> B
-    def ode_rhs(t, y, k):
-        return np.array([-k * y[0], k * y[0]])
-
-    simulating_func = make_simulating_func_from_ode_rhs(ode_rhs)
-
-    tdata = np.logspace(-3, 1, 12)
-    y0 = np.array([1, 0])
-    k = 1
-    ydata = simulating_func(tdata, y0, k)
+    sample = get_a_to_b_sample()
 
     objective_func = make_objective_func_for_lmfit_minimizer(
-        tdata, ydata, simulating_func, y0)
+        sample.t, sample.y, sample.simulating_func, sample.y0)
+    # `objective_func` returns a float
 
     params = Parameters()
-    params.add('k', value=0.1)
+    params.add('k', value=0.0)  # Initial guess
 
     iter_cb, records = make_iter_cb_for_lmfit_minimizer()
     minimizer = Minimizer(objective_func, params, iter_cb=iter_cb)
 
     result = minimizer.minimize()
 
-    assert np.isclose(result.params['k'].value, k)
+    assert np.isclose(result.params['k'].value, sample.params.k)
     assert len(records) > 0
     assert isinstance(records[0], IterationRecord)
     assert records[0].params.keys() == {'k'}
     assert records[0].iter == 0
-    assert isinstance(records[0].resid, float)  # because the objective function returns a float
+    # The type of `resid` should be the same as the return type of 
+    # `objective_func`
+    assert isinstance(records[0].resid, float)
 
 
 def test_case_where_objective_func_returns_array():
     # A -> B
-    def ode_rhs(t, y, k):
-        return np.array([-k * y[0], k * y[0]])
-
-    simulating_func = make_simulating_func_from_ode_rhs(ode_rhs)
-
-    tdata = np.logspace(-3, 1, 12)
-    y0 = np.array([1, 0])
-    k = 1
-    ydata = simulating_func(tdata, y0, k)
+    sample = get_a_to_b_sample()
 
     def objective_func(params: Parameters) -> npt.NDArray:
         k = params['k']
-        ymodel = simulating_func(tdata, y0, k)
-        return ymodel - ydata  # This is an array
+        ymodel = sample.simulating_func(sample.t, sample.y0, k)
+        return ymodel - sample.y  # This is an array
 
     params = Parameters()
-    params.add('k', value=0.1)
+    params.add('k', value=0.0)  # Initial guess
 
     iter_cb, records = make_iter_cb_for_lmfit_minimizer()
     minimizer = Minimizer(objective_func, params, iter_cb=iter_cb)
 
     result = minimizer.minimize()
 
-    assert np.isclose(result.params['k'].value, k)
+    assert np.isclose(result.params['k'].value, sample.params.k)
     assert len(records) > 0
     assert isinstance(records[0], IterationRecord)
     assert records[0].params.keys() == {'k'}
     assert records[0].iter == 0
-    assert isinstance(records[0].resid, np.ndarray)  # because the objective function returns an array
+    assert isinstance(records[0].resid, np.ndarray)  # array
 
 
 if __name__ == '__main__':
