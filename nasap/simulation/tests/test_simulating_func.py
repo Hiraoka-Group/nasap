@@ -1,6 +1,11 @@
+from typing import NamedTuple
+
 import numpy as np
 import numpy.typing as npt
 import pytest
+from hypothesis import example, given, settings
+from hypothesis import strategies as st
+from hypothesis.extra.numpy import arrays
 from scipy.integrate import solve_ivp
 
 from nasap.simulation import make_simulating_func_from_ode_rhs
@@ -65,6 +70,44 @@ def test_reversible_reaction():
     y = simulating_func(t, y0, k1, k2)
 
     assert y.shape == (len(t), len(y0))
+    np.testing.assert_allclose(y, expected)
+
+
+@st.composite
+def t_y0_log_k_mat(draw) -> tuple:
+    n = draw(st.integers(min_value=3, max_value=10))  # number of time points
+    m = draw(st.integers(min_value=1, max_value=3))  # number of species
+    t = draw(arrays(
+        dtype=float, shape=(n,), 
+        elements=st.floats(min_value=0, max_value=10**5), 
+        unique=True))
+    y0 = draw(arrays(
+        dtype=float, shape=(m,), 
+        elements=st.floats(min_value=0, max_value=10)))
+    lob_k_mat = draw(arrays(
+        dtype=float, shape=(m, m), 
+        elements=st.floats(min_value=-3, max_value=3)))
+    return np.sort(t), y0, lob_k_mat
+
+
+@given(t_y0_log_k_mat())
+def test_simulating_func(t_y0_log_k_mat: tuple) -> None:
+    t, y0, log_k_mat = t_y0_log_k_mat
+    k_mat = 10 ** log_k_mat
+    ode_rhs = lambda t, y, k_mat: k_mat @ y
+
+    def ode_rhs_with_fixed_parameters(t, y):
+        return ode_rhs(t, y, k_mat)
+    
+    sol = solve_ivp(
+        ode_rhs_with_fixed_parameters, 
+        (t[0], t[-1]), y0, dense_output=True)
+    expected = sol.sol(t).T
+
+    simulating_func = make_simulating_func_from_ode_rhs(ode_rhs)
+
+    y = simulating_func(t, y0, k_mat)
+
     np.testing.assert_allclose(y, expected)
 
 
