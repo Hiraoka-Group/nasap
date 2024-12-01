@@ -56,7 +56,26 @@ class SampleData(Generic[_P, _S]):
     
     @property
     def simulating_func(self) -> SimulatingFunc[_P]:
-        """Function that simulates the system."""
+        """Function that simulates the system.
+        
+        It has the signature
+            
+                ``simulating_func(t, y0, *args, **kwargs) -> y``
+            
+            where ``t`` is the time points (1-D array, shape (n,)),
+            ``y0`` is the initial values of the dependent variables
+            (1-D array, shape (m,)), ``args`` and ``kwargs`` are the
+            parameters of the ODE right-hand side function, and ``y``
+            is the dependent variables at the time points (2-D array,
+            shape (n, m)).
+
+        Notes
+        -----
+        THe simulating function uses the `scipy.integrate.solve_ivp`
+        to simulate the system. For the tolerance, it uses the
+        default values of `scipy.integrate.solve_ivp`, which are
+        ``rtol=1e-3`` and ``atol=1e-6``.
+        """
         return self._simulating_func
     
     @property

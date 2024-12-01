@@ -95,7 +95,7 @@ def test_simulating_func() -> None:
     
     y = sample.simulating_func(t, y0, params.k)
     
-    np.testing.assert_allclose(y, expected)
+    np.testing.assert_allclose(y, expected, rtol=1e-3, atol=1e-6)
 
 
 def test_y() -> None:
@@ -114,8 +114,7 @@ def test_y() -> None:
     expected = sample.simulating_func(t, y0, params.k)
 
     y = sample.y
-
-    np.testing.assert_allclose(y, expected)
+    np.testing.assert_allclose(y, expected, rtol=1e-3, atol=1e-6)
 
 
 if __name__ == '__main__':

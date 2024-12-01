@@ -58,6 +58,16 @@ def make_simulating_func_from_ode_rhs(
         parameters of the ODE right-hand side function, and ``y``
         is the dependent variables at the time points (2-D array,
         shape (n, m)).
+    
+    Notes
+    -----
+    The simulating function uses `scipy.integrate.solve_ivp` to
+    solve the ODEs with the default method `RK45`. The ``solve_ivp``
+    function is called without specifying the `t_eval` argument for
+    efficiency, and the result is interpolated using the dense
+    output.
+    Default values of `rtol` and `atol` are used for the `solve_ivp`
+    function. The default values are `1e-3` and `1e-6`, respectively.
     """
     def simulating_func(
             t: npt.NDArray, y0: npt.NDArray,

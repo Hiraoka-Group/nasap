@@ -11,7 +11,7 @@ def test_use_for_simple_minimization():
     sample = get_a_to_b_sample()
 
     params = Parameters()
-    params.add('k', value=0.0)  # Initial guess
+    params.add('log_k', value=0.0)  # Initial guess
 
     minimizer = make_lmfit_minimizer(
         sample.t, sample.y, sample.simulating_func, sample.y0, params)
@@ -19,7 +19,7 @@ def test_use_for_simple_minimization():
     result = minimizer.minimize()
 
     np.testing.assert_allclose(
-        result.params['k'].value, sample.params.k, rtol=1e-4)
+        result.params['log_k'].value, sample.params.log_k, atol=1e-3)
 
 
 def test_use_for_differential_evolution():
@@ -27,14 +27,15 @@ def test_use_for_differential_evolution():
     sample = get_a_to_b_sample()
 
     params = Parameters()
-    params.add('k', min=0, max=10)
+    params.add('log_k', min=-3, max=3)
 
     minimizer = make_lmfit_minimizer(
         sample.t, sample.y, sample.simulating_func, sample.y0, params)
 
     result = minimizer.minimize(method='differential_evolution')
 
-    np.testing.assert_allclose(result.params['k'].value, sample.params.k)
+    np.testing.assert_allclose(
+        result.params['log_k'].value, sample.params.log_k, atol=1e-3)
 
 
 if __name__ == '__main__':

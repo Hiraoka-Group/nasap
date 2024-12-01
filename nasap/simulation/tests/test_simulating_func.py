@@ -28,7 +28,7 @@ def test_one_reaction():
     y = simulating_func(t, y0, k)
 
     assert y.shape == (len(t), len(y0))
-    np.testing.assert_allclose(y, expected)
+    np.testing.assert_allclose(y, expected, rtol=1e-3, atol=1e-6)
 
 
 def test_two_reactions():
@@ -49,7 +49,7 @@ def test_two_reactions():
     y = simulating_func(t, y0, k1, k2)
 
     assert y.shape == (len(t), len(y0))
-    np.testing.assert_allclose(y, expected)
+    np.testing.assert_allclose(y, expected, rtol=1e-3, atol=1e-6)
 
 
 def test_reversible_reaction():
@@ -70,7 +70,7 @@ def test_reversible_reaction():
     y = simulating_func(t, y0, k1, k2)
 
     assert y.shape == (len(t), len(y0))
-    np.testing.assert_allclose(y, expected)
+    np.testing.assert_allclose(y, expected, rtol=1e-3, atol=1e-6)
 
 
 @st.composite
@@ -108,7 +108,7 @@ def test_simulating_func(t_y0_log_k_mat: tuple) -> None:
 
     y = simulating_func(t, y0, k_mat)
 
-    np.testing.assert_allclose(y, expected)
+    np.testing.assert_allclose(y, expected, rtol=1e-3, atol=1e-6)
 
 
 if __name__ == "__main__":

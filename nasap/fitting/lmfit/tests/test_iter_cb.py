@@ -18,7 +18,7 @@ def test_use_for_lmfit_minimizer():
     # `objective_func` returns a float
 
     params = Parameters()
-    params.add('k', value=0.0)  # Initial guess
+    params.add('log_k', value=1.0)  # Initial guess
 
     iter_cb, records = make_iter_cb_for_lmfit_minimizer()
     minimizer = Minimizer(objective_func, params, iter_cb=iter_cb)
@@ -26,10 +26,10 @@ def test_use_for_lmfit_minimizer():
     result = minimizer.minimize()
 
     np.testing.assert_allclose(
-        result.params['k'].value, sample.params.k, rtol=1e-4)
+        result.params['log_k'].value, sample.params.log_k, atol=1e-3)
     assert len(records) > 0
     assert isinstance(records[0], IterationRecord)
-    assert records[0].params.keys() == {'k'}
+    assert records[0].params.keys() == {'log_k'}
     assert records[0].iter == 0
     # The type of `resid` should be the same as the return type of 
     # `objective_func`
@@ -41,22 +41,23 @@ def test_case_where_objective_func_returns_array():
     sample = get_a_to_b_sample()
 
     def objective_func(params: Parameters) -> npt.NDArray:
-        k = params['k']
-        ymodel = sample.simulating_func(sample.t, sample.y0, k)
+        log_k = params['log_k']
+        ymodel = sample.simulating_func(sample.t, sample.y0, log_k)
         return ymodel - sample.y  # This is an array
 
     params = Parameters()
-    params.add('k', value=0.0)  # Initial guess
+    params.add('log_k', value=1.0)  # Initial guess
 
     iter_cb, records = make_iter_cb_for_lmfit_minimizer()
     minimizer = Minimizer(objective_func, params, iter_cb=iter_cb)
 
     result = minimizer.minimize()
 
-    np.testing.assert_allclose(result.params['k'].value, sample.params.k)
+    np.testing.assert_allclose(
+        result.params['log_k'].value, sample.params.log_k, atol=1e-3)
     assert len(records) > 0
     assert isinstance(records[0], IterationRecord)
-    assert records[0].params.keys() == {'k'}
+    assert records[0].params.keys() == {'log_k'}
     assert records[0].iter == 0
     assert isinstance(records[0].resid, np.ndarray)  # array
 

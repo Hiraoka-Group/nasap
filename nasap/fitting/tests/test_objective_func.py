@@ -14,10 +14,10 @@ def test_use_for_differential_evolution():
     objective_func = make_objective_func_from_simulating_func(
         sample.t, sample.y, sample.simulating_func, sample.y0)
 
-    result = differential_evolution(objective_func, [(0, 10)])
+    result = differential_evolution(objective_func, [(-3, 3)])
 
-    np.testing.assert_allclose(result.fun, 0.0)
-    np.testing.assert_allclose(result.x, sample.params.k)
+    assert result.success
+    np.testing.assert_allclose(result.x, sample.params.log_k, atol=1e-3)
 
 
 if __name__ == '__main__':

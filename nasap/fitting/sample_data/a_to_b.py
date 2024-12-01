@@ -11,14 +11,14 @@ from .sample_data import SampleData
 
 
 class AToBParams(NamedTuple):
-    k: float
+    log_k: float
 
 
 def get_a_to_b_sample(
         *,
         t: npt.ArrayLike = np.logspace(-3, 1, 10),
         y0: npt.ArrayLike = np.array([1, 0]),
-        k: float = 1.0
+        log_k: float = 0.0
         ):  # Intentionally not providing return type,
     # because when return type, `SampleData`, is provided,
     # somehow mypy does not infer the generic type of `SampleData`.
@@ -36,7 +36,7 @@ def get_a_to_b_sample(
     - ``[B] = 0.0``
     
     Kinetic constants:
-    - ``k = 1.0``
+    - ``k = 1.0``  i.e. ``log_k = 0.0``
 
     Time points: ``np.logspace(-3, 1, 10)``
     
@@ -58,8 +58,8 @@ def get_a_to_b_sample(
     t = np.array(t)
     y0 = np.array(y0)
     
-    def ode_rhs(t: float, y: npt.NDArray, k: float) -> npt.NDArray:
+    def ode_rhs(t: float, y: npt.NDArray, log_k: float) -> npt.NDArray:
+        k = 10**log_k
         return np.array([-k * y[0], k * y[0]])
     
-    return SampleData(
-        ode_rhs, t, y0, AToBParams(k=k))
+    return SampleData(ode_rhs, t, y0, AToBParams(log_k))
