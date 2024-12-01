@@ -8,12 +8,12 @@ from nasap.fitting.sample_data import AToBParams, get_a_to_b_sample
 
 def test_default_values():
     sample = get_a_to_b_sample()  # use default values
-    assert np.allclose(sample.t, np.logspace(-3, 1, 10))
+    np.testing.assert_allclose(sample.t, np.logspace(-3, 1, 10))
     assert isinstance(sample.simulating_func, Callable)
     assert sample.params == AToBParams(k=1.0)
     sim_result = sample.simulating_func(
         sample.t, np.array([1, 0]), sample.params.k)
-    assert np.allclose(sim_result, sample.y)
+    np.testing.assert_allclose(sim_result, sample.y)
 
 
 def test_custom_values():
@@ -27,7 +27,7 @@ def test_custom_values():
 
     sim_result = sample.simulating_func(
         sample.t, sample.y[0], sample.params.k)
-    assert np.allclose(sim_result, sample.y)
+    np.testing.assert_allclose(sim_result, sample.y)
 
 
 if __name__ == '__main__':

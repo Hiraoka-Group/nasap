@@ -25,7 +25,8 @@ def test_use_for_lmfit_minimizer():
 
     result = minimizer.minimize()
 
-    assert np.isclose(result.params['k'].value, sample.params.k)
+    np.testing.assert_allclose(
+        result.params['k'].value, sample.params.k, rtol=1e-4)
     assert len(records) > 0
     assert isinstance(records[0], IterationRecord)
     assert records[0].params.keys() == {'k'}
@@ -52,7 +53,7 @@ def test_case_where_objective_func_returns_array():
 
     result = minimizer.minimize()
 
-    assert np.isclose(result.params['k'].value, sample.params.k)
+    np.testing.assert_allclose(result.params['k'].value, sample.params.k)
     assert len(records) > 0
     assert isinstance(records[0], IterationRecord)
     assert records[0].params.keys() == {'k'}

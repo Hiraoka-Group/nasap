@@ -15,10 +15,10 @@ def test_init():
         init_particle_counts, rates_fun, particle_changes, 
         t_max=10.0)
 
-    assert np.array_equal(
+    np.testing.assert_allclose(
         gillespie.particle_counts_seq[0], init_particle_counts)
     assert gillespie.rates_fun == rates_fun
-    assert np.array_equal(
+    np.testing.assert_allclose(
         gillespie.particle_changes, particle_changes)
     assert gillespie.t_max == 10.0
     assert gillespie.max_iter == 1_000_000
@@ -41,7 +41,7 @@ def test_solve():
         Status.REACHED_T_MAX, Status.REACHED_MAX_ITER, 
         Status.TOTAL_RATE_ZERO}
     assert result.t_seq[0] == 0.0
-    assert np.array_equal(
+    np.testing.assert_allclose(
         result.particle_counts_seq[0], init_particle_counts)
 
 
@@ -138,7 +138,7 @@ def test_gillespie_init_based_on_concentrations():
         init_concentrations, conc_rates_fun, particle_changes, volume, 
         t_max=10.0)
 
-    assert np.allclose(
+    np.testing.assert_allclose(
         gillespie.particle_counts_seq[0], 
         init_concentrations * Avogadro * volume)
     assert gillespie.volume == volume
@@ -173,11 +173,11 @@ def test_with_example_reaction():
 
     atol = 500  # 5%
 
-    assert np.allclose(
+    np.testing.assert_allclose(
         result.particle_counts_seq[:, 0], expected_A, atol=atol)
-    assert np.allclose(
+    np.testing.assert_allclose(
         result.particle_counts_seq[:, 1], expected_B, atol=atol)
-    assert np.allclose(
+    np.testing.assert_allclose(
         result.particle_counts_seq[:, 2], expected_C, atol=atol)
     
 

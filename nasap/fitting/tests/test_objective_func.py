@@ -16,8 +16,8 @@ def test_use_for_differential_evolution():
 
     result = differential_evolution(objective_func, [(0, 10)])
 
-    assert np.isclose(result.fun, 0.0)
-    assert np.isclose(result.x, sample.params.k)
+    np.testing.assert_allclose(result.fun, 0.0)
+    np.testing.assert_allclose(result.x, sample.params.k)
 
 
 if __name__ == '__main__':

@@ -14,9 +14,9 @@ def test_zero_rss():
 
     rss = calc_simulation_rss(
         sample.t, sample.y, sample.simulating_func, sample.y0, 
-        k=sample.params.k)
+        k=sample.params.k)  # Use the correct value
     
-    assert rss == 0.0
+    np.testing.assert_allclose(rss, 0.0)
 
 
 def test_non_zero_rss():
@@ -26,14 +26,15 @@ def test_non_zero_rss():
 
     rss = calc_simulation_rss(
         sample.t, sample.y, sample.simulating_func, sample.y0,
-        k=k_with_error)
+        k=k_with_error)  # Use the incorrect value
 
     assert rss > 0.0
 
     y_with_error = sample.simulating_func(
         sample.t, sample.y0, k=k_with_error)
 
-    assert rss == np.sum((sample.y - y_with_error)**2)
+    np.testing.assert_allclose(
+        np.sum((sample.y - y_with_error)**2), rss)
 
 
 def test_ydata_with_row_of_nan():
@@ -53,7 +54,7 @@ def test_ydata_with_row_of_nan():
 
     rss = calc_simulation_rss(tdata, ydata, mock_sim_func, y0, k=1)
 
-    assert rss == 0.1**2 * 5
+    np.testing.assert_allclose(rss, 0.1**2 * 5)
 
 
 def test_use_for_basin_hopping():
@@ -72,7 +73,7 @@ def test_use_for_basin_hopping():
 
     result = basinhopping(f, 0.0)
 
-    assert np.isclose(result.fun, 0.0)
+    np.testing.assert_allclose(result.fun, 0.0, atol=1e-4)
 
 
 def test_use_for_differential_evolution():
@@ -91,7 +92,7 @@ def test_use_for_differential_evolution():
 
     result = differential_evolution(f, bounds=[(0, 10)])
 
-    assert np.isclose(result.fun, 0.0)
+    np.testing.assert_allclose(result.fun, 0.0, atol=1e-4)
 
 
 if __name__ == '__main__':

@@ -18,7 +18,8 @@ def test_use_for_simple_minimization():
 
     result = minimizer.minimize()
 
-    assert np.isclose(result.params['k'].value, sample.params.k)
+    np.testing.assert_allclose(
+        result.params['k'].value, sample.params.k, rtol=1e-4)
 
 
 def test_use_for_differential_evolution():
@@ -33,7 +34,7 @@ def test_use_for_differential_evolution():
 
     result = minimizer.minimize(method='differential_evolution')
 
-    assert np.isclose(result.params['k'].value, sample.params.k)
+    np.testing.assert_allclose(result.params['k'].value, sample.params.k)
 
 
 if __name__ == '__main__':

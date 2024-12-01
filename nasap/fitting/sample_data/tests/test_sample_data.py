@@ -19,8 +19,8 @@ def test_init() -> None:
     sample = SampleData(ode_rhs, t, y0, params)
 
     assert sample.ode_rhs is ode_rhs
-    assert np.array_equal(sample.t, t)
-    assert np.array_equal(sample.y0, y0)
+    np.testing.assert_array_equal(sample.t, t)
+    np.testing.assert_array_equal(sample.y0, y0)
     assert sample.params == params
 
 
