@@ -20,7 +20,7 @@ def test_custom_values():
     t = np.logspace(-2, 1, 20)
     y0 = np.array([0.5, 0.5])
     k = 2.0
-    sample = get_a_to_b_sample(tdata=t, y0=y0, k=k)  # use custom values
+    sample = get_a_to_b_sample(t=t, y0=y0, k=k)  # use custom values
     np.testing.assert_allclose(sample.t, t)
     np.testing.assert_allclose(sample.y[0], y0)
     assert sample.params.k == k

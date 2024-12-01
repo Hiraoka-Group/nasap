@@ -16,7 +16,7 @@ class AToBParams(NamedTuple):
 
 def get_a_to_b_sample(
         *,
-        tdata: npt.ArrayLike = np.logspace(-3, 1, 10),
+        t: npt.ArrayLike = np.logspace(-3, 1, 10),
         y0: npt.ArrayLike = np.array([1, 0]),
         k: float = 1.0
         ):  # Intentionally not providing return type,
@@ -55,11 +55,11 @@ def get_a_to_b_sample(
             Read-only dictionary of parameters.
         - y0 (npt.NDArray, shape (2,)): Initial conditions.
     """
-    tdata = np.array(tdata)
+    t = np.array(t)
     y0 = np.array(y0)
     
     def ode_rhs(t: float, y: npt.NDArray, k: float) -> npt.NDArray:
         return np.array([-k * y[0], k * y[0]])
     
     return SampleData(
-        ode_rhs, tdata, y0, AToBParams(k=k))
+        ode_rhs, t, y0, AToBParams(k=k))
