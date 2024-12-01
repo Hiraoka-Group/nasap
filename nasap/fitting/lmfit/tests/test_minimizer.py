@@ -4,7 +4,6 @@ from lmfit import Parameters
 
 from nasap.fitting.lmfit import make_lmfit_minimizer
 from nasap.fitting.sample_data import get_a_to_b_sample
-from nasap.simulation import make_simulating_func_from_ode_rhs
 
 
 def test_use_for_simple_minimization():
