@@ -9,7 +9,7 @@ from nasap.fitting.sample_data import AToBParams, get_a_to_b_sample
 def test_default_values():
     sample = get_a_to_b_sample()  # use default values
     np.testing.assert_allclose(sample.t, np.logspace(-3, 1, 10))
-    assert isinstance(sample.simulating_func, Callable)
+    assert callable(sample.simulating_func)
     assert sample.params == AToBParams(log_k=0.0)
     sim_result = sample.simulating_func(
         sample.t, np.array([1, 0]), sample.params.log_k)
