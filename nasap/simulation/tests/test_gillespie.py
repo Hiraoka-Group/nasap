@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 import pytest
 from scipy.constants import Avogadro
 
@@ -9,7 +10,8 @@ from nasap.simulation.gillespie import GillespieResult, Status
 def test_init():
     # A <-> B
     init_particle_counts = np.array([100, 200])
-    rates_fun = lambda x: [0.1, 0.2]
+    def rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([0.1, 0.2])
     particle_changes = [np.array([-1, 1]), np.array([1, -1])]
     gillespie = Gillespie(
         init_particle_counts, rates_fun, particle_changes, 
@@ -28,7 +30,8 @@ def test_init():
 def test_solve():
     # A <-> B
     init_particle_counts = np.array([100, 200])
-    rates_fun = lambda x: [0.1, 0.2]
+    def rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([0.1, 0.2])
     particle_changes = [np.array([-1, 1]), np.array([1, -1])]
     gillespie = Gillespie(
         init_particle_counts, rates_fun, particle_changes, 
@@ -48,7 +51,8 @@ def test_solve():
 def test_step_count():
     # A <-> B
     init_particle_counts = np.array([100, 200])
-    rates_fun = lambda x: [0.1, 0.2]
+    def rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([0.1, 0.2])
     particle_changes = [np.array([-1, 1]), np.array([1, -1])]
     gillespie = Gillespie(
         init_particle_counts, rates_fun, particle_changes, 
@@ -62,7 +66,8 @@ def test_step_count():
 def test_status_of_max_iter_reached():
     # A <-> B
     init_particle_counts = np.array([100, 200])
-    rates_fun = lambda x: [0.1, 0.2]
+    def rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([0.1, 0.2])
     particle_changes = [np.array([-1, 1]), np.array([1, -1])]
     gillespie = Gillespie(
         init_particle_counts, rates_fun, particle_changes, 
@@ -79,8 +84,8 @@ def test_status_of_total_rate_zero():
     # Few particles, so the total rate becomes zero
     # before the max iteration is reached.
     init_particle_counts = np.array([10, 0])
-
-    rates_fun = lambda x: [0.1 * x[0]]
+    def rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([0.1 * x[0]])
     particle_changes = [np.array([-1, 1])]
     gillespie = Gillespie(
         init_particle_counts, rates_fun, particle_changes, 
@@ -97,7 +102,8 @@ def test_status_of_total_rate_zero():
 def test_status_of_t_max_reached():
     # A <-> B
     init_particle_counts = np.array([100, 200])
-    rates_fun = lambda x: [0.1 * x[0], 0.2 * x[1]]
+    def rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([0.1 * x[0], 0.2 * x[1]])
     particle_changes = [np.array([-1, 1]), np.array([1, -1])]
     gillespie = Gillespie(
         init_particle_counts, rates_fun, particle_changes, 
@@ -115,7 +121,8 @@ def test_status_of_t_max_reached():
 def test_concentrations():
     # A <-> B
     init_particle_counts = np.array([100, 200])
-    rates_fun = lambda x: [0.1, 0.2]
+    def rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([0.1, 0.2])
     particle_changes = [np.array([-1, 1]), np.array([1, -1])]
     volume = 1.0
     gillespie = Gillespie(
@@ -131,7 +138,8 @@ def test_concentrations():
 def test_gillespie_init_based_on_concentrations():
     # A <-> B
     init_concentrations = np.array([1e-4, 2e-4])
-    conc_rates_fun = lambda x: [0.1, 0.2]
+    def conc_rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([0.1, 0.2])
     particle_changes = [np.array([-1, 1]), np.array([1, -1])]
     volume = 1.0
     gillespie = Gillespie.init_based_on_concentrations(
@@ -159,7 +167,8 @@ def test_with_example_reaction():
     # C = 2 * A0 * (1 - exp(-k * t))
     init_particle_counts = np.array([10000, 0, 0])
     k = 0.1
-    rates_fun = lambda x: [k * x[0]]
+    def rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([k * x[0]])
     particle_changes = [np.array([-1, 1, 2])]
     gillespie = Gillespie(
         init_particle_counts, rates_fun, particle_changes, 
@@ -197,7 +206,8 @@ def test_with_example_reaction_by_plotting():
     # C = 2 * A0 * (1 - exp(-k * t))
     init_particle_counts = np.array([10000, 0, 0])
     k = 0.1
-    rates_fun = lambda x: [k * x[0]]
+    def rates_fun(x: npt.NDArray[np.int_]) -> npt.NDArray:
+        return np.array([k * x[0]])
     particle_changes = [np.array([-1, 1, 2])]
     gillespie = Gillespie(
         init_particle_counts, rates_fun, particle_changes, 
