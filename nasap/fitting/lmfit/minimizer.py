@@ -1,11 +1,9 @@
-import inspect
-from collections.abc import Callable, Iterable
-from typing import Concatenate, ParamSpec, Protocol, TypeAlias, TypeVar
+from collections.abc import Callable
+from typing import Concatenate, ParamSpec
 
 import numpy.typing as npt
 from lmfit import Minimizer, Parameters
 
-from ..objective_func import make_objective_func_from_simulating_func
 from ..rss import calc_simulation_rss
 
 _P = ParamSpec('_P')

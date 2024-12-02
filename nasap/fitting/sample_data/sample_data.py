@@ -1,6 +1,5 @@
 from collections.abc import Callable
-from typing import (Concatenate, Generic, NamedTuple, ParamSpec, TypeAlias,
-                    TypeVar)
+from typing import Concatenate, Generic, NamedTuple, ParamSpec, TypeVar
 
 import numpy as np
 import numpy.typing as npt

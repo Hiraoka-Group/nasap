@@ -1,9 +1,8 @@
-from typing import NamedTuple
 
 import numpy as np
 import numpy.typing as npt
 import pytest
-from hypothesis import example, given, settings
+from hypothesis import given
 from hypothesis import strategies as st
 from hypothesis.extra.numpy import arrays
 from scipy.integrate import solve_ivp

@@ -1,4 +1,4 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from typing import Concatenate
 
 import numpy.typing as npt
