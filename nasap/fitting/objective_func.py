@@ -12,6 +12,8 @@ def make_objective_func_from_simulating_func(
         simulating_func: Callable[
             Concatenate[npt.NDArray, npt.NDArray, ...], npt.NDArray],
         y0: npt.NDArray,
+        *,
+        unpack_args: bool = False
         ) -> Callable[[npt.NDArray], float]:
     """Make an objective function from a simulating function.
     
@@ -35,6 +37,11 @@ def make_objective_func_from_simulating_func(
         arguments are not supported.
     y0 : npt.NDArray, shape (m,)
         Initial conditions.
+    unpack_args : bool, optional
+        If True, the parameters (1D `npt.NDArray`) passed to the 
+        resulting objective function will be passed as unpacked arguments 
+        to the `simulating_func`. Otherwise, the parameters will be passed
+        as a single argument as is. Default is False.
 
     Returns
     -------
@@ -46,12 +53,17 @@ def make_objective_func_from_simulating_func(
             ``objective_func(param_values) -> rss``
         
         where ``param_values`` is a 1-D array with shape (p,) and ``rss`` is
-        the residual sum of squares (float). The parameters should be passed
-        in the same order as they are expected by the simulation function.
+        the residual sum of squares (float).
     """
-
-    def objective_func(param_values: npt.NDArray) -> float:
-        rss = calc_simulation_rss(tdata, ydata, simulating_func, y0, *param_values)
-        return rss
+    if unpack_args:
+        def objective_func(param_values: npt.NDArray) -> float:
+            rss = calc_simulation_rss(
+                tdata, ydata, simulating_func, y0, *param_values)  # unpack
+            return rss
+    else:
+        def objective_func(param_values: npt.NDArray) -> float:
+            rss = calc_simulation_rss(
+                tdata, ydata, simulating_func, y0, param_values)
+            return rss
     
     return objective_func
