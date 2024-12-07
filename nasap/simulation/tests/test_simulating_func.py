@@ -21,8 +21,8 @@ def test_one_reaction():
     y0 = np.array([1, 0])
     k = 1
 
-    sol = solve_ivp(ode_rhs, (t[0], t[-1]), y0, args=(k,), dense_output=True)
-    expected = sol.sol(t).T
+    sol = solve_ivp(ode_rhs, (t[0], t[-1]), y0, args=(k,), t_eval=t)
+    expected = sol.y.T
 
     y = simulating_func(t, y0, k)
 
@@ -42,8 +42,8 @@ def test_two_reactions():
     k1 = 1
     k2 = 1
 
-    sol = solve_ivp(ode_rhs, (t[0], t[-1]), y0, args=(k1, k2), dense_output=True)
-    expected = sol.sol(t).T
+    sol = solve_ivp(ode_rhs, (t[0], t[-1]), y0, args=(k1, k2), t_eval=t)
+    expected = sol.y.T
 
     y = simulating_func(t, y0, k1, k2)
 
@@ -63,8 +63,8 @@ def test_reversible_reaction():
     k1 = 1
     k2 = 1
 
-    sol = solve_ivp(ode_rhs, (t[0], t[-1]), y0, args=(k1, k2), dense_output=True)
-    expected = sol.sol(t).T
+    sol = solve_ivp(ode_rhs, (t[0], t[-1]), y0, args=(k1, k2), t_eval=t)
+    expected = sol.y.T
 
     y = simulating_func(t, y0, k1, k2)
 
@@ -100,8 +100,8 @@ def test_simulating_func(t_y0_log_k_mat: tuple) -> None:
     
     sol = solve_ivp(
         ode_rhs_with_fixed_parameters, 
-        (t[0], t[-1]), y0, dense_output=True)
-    expected = sol.sol(t).T
+        (t[0], t[-1]), y0, t_eval=t)
+    expected = sol.y.T
 
     simulating_func = make_simulating_func_from_ode_rhs(ode_rhs)
 

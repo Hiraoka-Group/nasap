@@ -79,8 +79,8 @@ def make_simulating_func_from_ode_rhs(
 
         sol = solve_ivp(
             ode_rhs_with_fixed_parameters, (t[0], t[-1]), y0,
-            dense_output=True)
+            t_eval=t)
 
-        return sol.sol(t).T
+        return sol.y.T
 
     return simulating_func
