@@ -20,7 +20,8 @@ class SimulatingFunc(Generic[_P], Protocol):
 
 
 def make_simulating_func_from_ode_rhs(
-        ode_rhs: Callable[Concatenate[float, npt.NDArray, _P], npt.NDArray]
+        ode_rhs: Callable[Concatenate[float, npt.NDArray, _P], npt.NDArray],
+        method: str = 'RK45', rtol: float = 1e-3, atol: float = 1e-6
         ) -> SimulatingFunc[_P]:
     """Make a simulating function from an ODE right-hand side function.
 
@@ -43,6 +44,15 @@ def make_simulating_func_from_ode_rhs(
         ``dydt`` is the derivative of the dependent variable (1-D
         array, shape (m,)). The names of ``t`` and ``y`` can be
         different.
+    method: str, optional
+        The method to use for the `solve_ivp` function. Default is
+        'RK45'.
+    rtol: float, optional
+        The relative tolerance for the `solve_ivp` function. Default
+        is 1e-3.
+    atol: float, optional
+        The absolute tolerance for the `solve_ivp` function. Default
+        is 1e-6.
 
     Returns
     -------
@@ -76,10 +86,10 @@ def make_simulating_func_from_ode_rhs(
         def ode_rhs_with_fixed_parameters(
                 t: float, y: npt.NDArray) -> npt.NDArray:
             return ode_rhs(t, y, *args, **kwargs)
-
+        
         sol = solve_ivp(
             ode_rhs_with_fixed_parameters, (t[0], t[-1]), y0,
-            t_eval=t)
+            t_eval=t, method=method, rtol=rtol, atol=atol)
 
         return sol.y.T
 

@@ -110,5 +110,48 @@ def test_simulating_func(t_y0_log_k_mat: tuple) -> None:
     np.testing.assert_allclose(y, expected, rtol=1e-3, atol=1e-6)
 
 
+def test_custom_method():
+    def ode_rhs(t: float, y: npt.NDArray, k: float) -> npt.NDArray:
+        return np.array([-k * y[0], k * y[0]])
+
+    simulating_func = make_simulating_func_from_ode_rhs(
+        ode_rhs, method='RK23')
+
+    t = np.logspace(-3, 1, 12)
+    y0 = np.array([1, 0])
+    k = 1
+
+    sol = solve_ivp(
+        ode_rhs, (t[0], t[-1]), y0, args=(k,), t_eval=t, method='RK23')
+    expected = sol.y.T
+
+    y = simulating_func(t, y0, k)
+
+    assert y.shape == (len(t), len(y0))
+    np.testing.assert_allclose(y, expected, rtol=1e-3, atol=1e-6)
+
+
+def test_custom_rtol_atol():
+    def ode_rhs(t: float, y: npt.NDArray, k: float) -> npt.NDArray:
+        return np.array([-k * y[0], k * y[0]])
+
+    simulating_func = make_simulating_func_from_ode_rhs(
+        ode_rhs, rtol=1e-6, atol=1e-9)
+
+    t = np.logspace(-3, 1, 12)
+    y0 = np.array([1, 0])
+    k = 1
+
+    sol = solve_ivp(
+        ode_rhs, (t[0], t[-1]), y0, args=(k,), t_eval=t, 
+        rtol=1e-6, atol=1e-9)
+    expected = sol.y.T
+
+    y = simulating_func(t, y0, k)
+
+    assert y.shape == (len(t), len(y0))
+    np.testing.assert_allclose(y, expected, rtol=1e-3, atol=1e-6)
+
+
 if __name__ == "__main__":
     pytest.main(['-v', __file__])
