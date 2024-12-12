@@ -1,10 +1,15 @@
 from collections.abc import Callable
-from typing import Concatenate
+from typing import Concatenate, Protocol
 
 import numpy as np
 import numpy.typing as npt
 from lmfit import Parameters
 from scipy.integrate import solve_ivp
+
+
+class ObjectiveFunc(Protocol):
+    def __call__(self, params: Parameters) -> float:
+        ...
 
 
 def make_objective_func_for_lmfit_minimizer(
@@ -14,7 +19,7 @@ def make_objective_func_for_lmfit_minimizer(
         pass_params_as_array: bool = False,
         *,
         method: str = 'RK45', rtol: float = 1e-3, atol: float = 1e-6
-        ) -> Callable[[npt.NDArray], float]:
+        ) -> ObjectiveFunc:
     """Make an objective function for the `lmfit.Minimizer` class from 
     a simulating function.
 
