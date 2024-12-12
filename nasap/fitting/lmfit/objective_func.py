@@ -7,7 +7,7 @@ from lmfit import Parameters
 from scipy.integrate import solve_ivp
 
 
-class ObjectiveFunc(Protocol):
+class LmfitObjectiveFunc(Protocol):
     def __call__(self, params: Parameters) -> float:
         ...
 
@@ -19,7 +19,7 @@ def make_objective_func_for_lmfit_minimizer(
         pass_params_as_array: bool = False,
         *,
         method: str = 'RK45', rtol: float = 1e-3, atol: float = 1e-6
-        ) -> ObjectiveFunc:
+        ) -> LmfitObjectiveFunc:
     """Make an objective function for the `lmfit.Minimizer` class from 
     a simulating function.
 
