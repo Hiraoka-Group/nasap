@@ -16,7 +16,7 @@ def make_objective_func_from_ode_rhs(
             Concatenate[float, npt.NDArray, ...], npt.NDArray],
         tdata: npt.NDArray, ydata: npt.NDArray, 
         t0: float, y0: npt.NDArray,
-        pass_params_as_array: bool = False,
+        pass_params_as_array: bool = True,
         *,
         method: str = 'RK45', rtol: float = 1e-3, atol: float = 1e-6
         ) -> ObjectiveFunc:
@@ -53,7 +53,7 @@ def make_objective_func_from_ode_rhs(
     pass_params_as_array : bool, optional
         If True, the parameters are passed to the ODE right-hand side
         function as an array. If False, the parameters are unpacked
-        and passed individually. Default is False.
+        and passed individually. Default is True.
     method : str, optional
         The method to use for the `solve_ivp` function. Default is
         'RK45'.
