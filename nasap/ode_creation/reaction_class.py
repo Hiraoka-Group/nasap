@@ -1,10 +1,14 @@
 from collections.abc import Iterable
+from typing import Generic, TypeVar
+
+_T_co = TypeVar('_T_co', covariant=True)
+_S_co = TypeVar('_S_co', covariant=True)
 
 
-class Reaction:
+class Reaction(Generic[_T_co, _S_co]):
     def __init__(
-            self, reactants: Iterable[int], products: Iterable[int],
-            reaction_kind: int, duplicate_count: int
+            self, reactants: Iterable[_T_co], products: Iterable[_T_co],
+            reaction_kind: _S_co, duplicate_count: int
             ) -> None:
         # If two A assemblies are consumed, then two As should be in the list.
         self._reactants = tuple(reactants)
@@ -14,11 +18,11 @@ class Reaction:
         self._reaction_kind = reaction_kind
 
     @property
-    def reactants(self) -> tuple[int, ...]:
+    def reactants(self) -> tuple[_T_co, ...]:
         return self._reactants
 
     @property
-    def products(self) -> tuple[int, ...]:
+    def products(self) -> tuple[_T_co, ...]:
         return self._products
 
     @property
@@ -26,7 +30,7 @@ class Reaction:
         return self._duplicate_count
 
     @property
-    def reaction_kind(self) -> int:
+    def reaction_kind(self) -> _S_co:
         return self._reaction_kind
 
     def __hash__(self) -> int:
