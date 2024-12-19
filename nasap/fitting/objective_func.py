@@ -96,6 +96,6 @@ def make_objective_func_from_ode_rhs(
         sol = solve_ode(x)
         ymodel = sol.y.T
         resid = ymodel - ydata
-        return np.sum(resid**2)
+        return np.nansum(resid**2)
     
     return objective_func
