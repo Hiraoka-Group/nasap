@@ -52,7 +52,7 @@ def create_ode_rhs(
         # y: concentrations of assemblies, shape: (n,)
         # log_k_of_rxn_kinds: log(k) of each reaction kind, shape: (k,)
 
-        k_of_rxn_kinds = 10**log_k_of_rxn_kinds  # shape: (k,)
+        k_of_rxn_kinds = 10.0**log_k_of_rxn_kinds  # shape: (k,)
         ks = rxn_to_kind @ k_of_rxn_kinds  # shape: (m,)
 
         # First, determine the rate of the reaction occurrences.
