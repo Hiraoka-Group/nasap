@@ -1,12 +1,14 @@
-from collections.abc import Iterable
-from typing import Protocol
+from collections.abc import Iterable, Sequence
+from typing import Protocol, TypeVar
 
 import numpy as np
 import numpy.typing as npt
 
-from nasap.ode_creation.reaction_class import Reaction
-
 from .lib import calc_consumed_count, calc_produced_count
+from .reaction_class import Reaction, convert_reaction_to_use_index
+
+_T_co = TypeVar('_T_co', covariant=True)  # type of assembly
+_S_co = TypeVar('_S_co', covariant=True)  # type of reaction kind
 
 
 class OdeRhs(Protocol):
@@ -18,29 +20,54 @@ class OdeRhs(Protocol):
 
 
 def create_ode_rhs(
-        assems: Iterable[int], 
-        reactions: Iterable[Reaction],
-        reaction_kinds: Iterable[int],
+        assemblies: Sequence[_T_co], 
+        reaction_kinds: Sequence[_S_co],
+        reactions: Iterable[Reaction[_T_co, _S_co]],
         ) -> OdeRhs:
+    """Create a function that calculates the right-hand side of the ODE.
+
+    Parameters
+    ----------
+    assemblies : Sequence[_T_co]
+        Assembly IDs. Can be any hashable type. The order of the IDs
+        will be used to determine the order of `y` parameter in the
+        returned function.
+    reaction_kinds : Sequence[_S_co]
+        Reaction kind IDs. Can be any hashable type. The order of the IDs
+        will be used to determine the order of `log_k_of_rxn_kinds`
+        parameter in the returned function.
+    reactions : Iterable[Reaction[_T_co, _S_co]]
+        Reactions to be included in the ODE.
+    """
+    assem_id_to_index = {assem: i for i, assem in enumerate(assemblies)}
+    reaction_kind_id_to_index = {
+        kind: i for i, kind in enumerate(reaction_kinds)}
+    reaction_by_index = [
+        convert_reaction_to_use_index(
+            reaction, assem_id_to_index, reaction_kind_id_to_index)
+        for reaction in reactions]
+    
     # n: number of assemblies
     # m: number of reactions
     # k: number of reaction kinds
-    assems = list(assems)
-    reactions = list(reactions)
-    reaction_kinds = list(reaction_kinds)
+    number_of_assems = len(assemblies)
+    assem_indices = np.arange(number_of_assems)
+    reaction_kind_indices = np.arange(len(reaction_kinds))
     
     # shape: (m, k), dtype: bool
     rxn_to_kind = np.array([
         [reaction.reaction_kind == kind for kind in reaction_kinds]
-        for reaction in reactions])
+        for reaction in reaction_by_index])
 
     # shape: (m,)
     coefficients = np.array([
-        reaction.duplicate_count for reaction in reactions])
+        reaction.duplicate_count for reaction in reaction_by_index])
     
     # shape: (m, n)
-    consumed = calc_consumed_count(assems, reactions)  # shape: (m, n)
-    produced = calc_produced_count(assems, reactions)  # shape: (m, n)
+    consumed = calc_consumed_count(
+        number_of_assems, reaction_by_index)  # shape: (m, n)
+    produced = calc_produced_count(
+        number_of_assems, reaction_by_index)  # shape: (m, n)
     change = produced - consumed  # shape: (m, n)
     
     # Note: `ode_rhs` should be as efficient as possible

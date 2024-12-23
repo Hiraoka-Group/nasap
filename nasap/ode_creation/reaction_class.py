@@ -1,8 +1,8 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from typing import Generic, TypeVar
 
-_T_co = TypeVar('_T_co', covariant=True)
-_S_co = TypeVar('_S_co', covariant=True)
+_T_co = TypeVar('_T_co', covariant=True)  # type of assembly
+_S_co = TypeVar('_S_co', covariant=True)  # type of reaction kind
 
 
 class Reaction(Generic[_T_co, _S_co]):
@@ -47,3 +47,21 @@ class Reaction(Generic[_T_co, _S_co]):
             self._duplicate_count == other._duplicate_count and
             self._reaction_kind == other._reaction_kind
             )
+
+
+def convert_reaction_to_use_index(
+        descriptive_reaction: Reaction[_T_co, _S_co],
+        assem_id_to_index: Mapping[_T_co, int],
+        reaction_kind_id_to_index: Mapping[_S_co, int],
+        ) -> Reaction[int, int]:
+    reactant_indices = [
+        assem_id_to_index[assem] for assem in descriptive_reaction.reactants]
+    product_indices = [
+        assem_id_to_index[assem] for assem in descriptive_reaction.products]
+    reaction_kind_index = reaction_kind_id_to_index[
+        descriptive_reaction.reaction_kind]
+    return Reaction(
+        reactants=reactant_indices,
+        products=product_indices,
+        reaction_kind=reaction_kind_index,
+        duplicate_count=descriptive_reaction.duplicate_count)

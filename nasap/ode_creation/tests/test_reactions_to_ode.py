@@ -55,7 +55,7 @@ def test_basic():
         k = 10**log_k
         return np.array([-k * y[0], k * y[0]])
 
-    ode_rhs = create_ode_rhs(assemblies, reactions, reaction_kinds)
+    ode_rhs = create_ode_rhs(assemblies, reaction_kinds, reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     # parameters: t, y, log_k_of_rxn_kinds
@@ -83,7 +83,7 @@ def test_reversible():
         k2 = 10**log_k_of_rxn_kinds[1]
         return np.array([-k1 * y[0] + k2 * y[1], k1 * y[0] - k2 * y[1]])
     
-    ode_rhs = create_ode_rhs(assemblies, reactions, reaction_kinds)
+    ode_rhs = create_ode_rhs(assemblies, reaction_kinds, reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 0]), np.array([0, 0]))
@@ -109,7 +109,7 @@ def test_chain():
         k2 = 10**log_k_of_rxn_kinds[1]
         return np.array([-k1 * y[0], k1 * y[0] - k2 * y[1], k2 * y[1]])
     
-    ode_rhs = create_ode_rhs(assemblies, reactions, [0, 1])
+    ode_rhs = create_ode_rhs(assemblies, [0, 1], reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 0, 0]), np.array([0, 0]))
@@ -141,7 +141,7 @@ def test_competition():
         return np.array(
             [-k1 * y[0] - k2 * y[0], k1 * y[0], k2 * y[0]])
     
-    ode_rhs = create_ode_rhs(assemblies, reactions, [0, 1])
+    ode_rhs = create_ode_rhs(assemblies, [0, 1], reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 0, 0]), np.array([0, 0]))
@@ -168,7 +168,7 @@ def test_duplicate_count():
         k = 10**rxn_kind_to_log_k[0]
         return np.array([-2 * k * y[0], 2 * k * y[0]])
     
-    ode_rhs = create_ode_rhs(assemblies, reactions, reaction_kinds)
+    ode_rhs = create_ode_rhs(assemblies, reaction_kinds, reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 0]), np.array([0]))
@@ -195,7 +195,7 @@ def test_hetero_2_to_1():
         return np.array(
             [-k1 * y[0] * y[1], -k1 * y[0] * y[1], k1 * y[0] * y[1]])
     
-    ode_rhs = create_ode_rhs(assemblies, reactions, reaction_kinds)
+    ode_rhs = create_ode_rhs(assemblies, reaction_kinds, reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 1, 0]), np.array([0]))
@@ -232,7 +232,7 @@ def test_homo_2_to_1():
         return np.array(
             [-2 * 2 * k1 * y[0]**2, 2 * k1 * y[0]**2])
 
-    ode_rhs = create_ode_rhs(assemblies, reactions, reaction_kinds)
+    ode_rhs = create_ode_rhs(assemblies, reaction_kinds, reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 0]), np.array([0]))
@@ -258,7 +258,7 @@ def test_1_to_homo_2():
         return np.array(
             [-k1 * y[0], 2 * k1 * y[0]])
 
-    ode_rhs = create_ode_rhs(assemblies, reactions, reaction_kinds)
+    ode_rhs = create_ode_rhs(assemblies, reaction_kinds, reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 0]), np.array([0]))
@@ -284,7 +284,7 @@ def test_homo_2_to_homo_2():
         return np.array(
             [-2 * k1 * y[0]**2, 2 * k1 * y[0]**2])
 
-    ode_rhs = create_ode_rhs(assemblies, reactions, reaction_kinds)
+    ode_rhs = create_ode_rhs(assemblies, reaction_kinds, reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 0]), np.array([0]))
@@ -316,7 +316,7 @@ def test_homo_2_to_1_reversible():
             [-2 * k1 * y[0]**2 + 2 * k2 * y[1], 
              k1 * y[0]**2 - k2 * y[1]])
     
-    ode_rhs = create_ode_rhs(assemblies, reactions, [0, 1])
+    ode_rhs = create_ode_rhs(assemblies, [0, 1], reactions)
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 0]), np.array([0, 0]))
