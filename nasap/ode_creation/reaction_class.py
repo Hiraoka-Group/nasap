@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Sequence
 from typing import Generic, TypeVar
 
 _T_co = TypeVar('_T_co', covariant=True)  # type of assembly
@@ -51,15 +51,20 @@ class Reaction(Generic[_T_co, _S_co]):
 
 def convert_reaction_to_use_index(
         descriptive_reaction: Reaction[_T_co, _S_co],
-        assem_id_to_index: Mapping[_T_co, int],
-        reaction_kind_id_to_index: Mapping[_S_co, int],
+        assem_ids: Sequence[_T_co],
+        reaction_kind_ids: Sequence[_S_co],
         ) -> Reaction[int, int]:
+    assem_id_to_index = {assem: i for i, assem in enumerate(assem_ids)}
+    reaction_kind_id_to_index = {
+        kind: i for i, kind in enumerate(reaction_kind_ids)}
+    
     reactant_indices = [
         assem_id_to_index[assem] for assem in descriptive_reaction.reactants]
     product_indices = [
         assem_id_to_index[assem] for assem in descriptive_reaction.products]
     reaction_kind_index = reaction_kind_id_to_index[
         descriptive_reaction.reaction_kind]
+    
     return Reaction(
         reactants=reactant_indices,
         products=product_indices,
