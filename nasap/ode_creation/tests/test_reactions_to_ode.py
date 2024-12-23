@@ -325,5 +325,29 @@ def test_homo_2_to_1_reversible():
     checker.check(0, np.array([1, 0]), np.array([2, 1]))
 
 
+def test_str_assem_ids():
+    # A -> B  (k)
+    assemblies = ['A', 'B']
+    reactions = [
+        Reaction(
+            reactants=['A'], products=['B'], reaction_kind='k', 
+            duplicate_count=1)
+        ]
+    reaction_kinds = ['k']
+    
+    def expected_ode_rhs(t, y, log_k_of_rxn_kinds):
+        log_k, = log_k_of_rxn_kinds
+        k = 10**log_k
+        return np.array([-k * y[0], k * y[0]])
+
+    ode_rhs = create_ode_rhs(assemblies, reaction_kinds, reactions)
+
+    checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
+    # parameters: t, y, log_k_of_rxn_kinds
+    checker.check(0, np.array([1, 0]), np.array([0]))
+    checker.check(0, np.array([0.5, 0.5]), np.array([0]))
+    checker.check(0, np.array([1, 0]), np.array([2]))
+
+
 if __name__ == '__main__':
     pytest.main(['-v', __file__])

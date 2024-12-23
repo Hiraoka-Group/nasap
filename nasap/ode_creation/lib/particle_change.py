@@ -1,41 +1,56 @@
-from collections.abc import Iterable
+from collections.abc import Hashable, Sequence
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing as npt
 
 from nasap.ode_creation.reaction_class import Reaction
 
+_T = TypeVar('_T', bound=Hashable)
+
 # n: number of assemblies
 # m: number of reactions
 # k: number of reaction kinds
 
 def calc_particle_change(
-        number_of_assems: int, reactions: Iterable[Reaction]
+        assemblies: Sequence[_T], reactions: Sequence[Reaction[_T, Any]]
         ) -> npt.NDArray:  # shape (m, n)
-    consumed_count = calc_consumed_count(number_of_assems, reactions)
-    produced_count = calc_produced_count(number_of_assems, reactions)
+    assemblies = list(assemblies)
+    reactions = list(reactions)
+    consumed_count = calc_consumed_count(assemblies, reactions)
+    produced_count = calc_produced_count(assemblies, reactions)
     return produced_count - consumed_count
 
 
 def calc_consumed_count(
-        number_of_assems: int, reactions: Iterable[Reaction]
+        assemblies: Sequence[_T], reactions: Sequence[Reaction[_T, Any]]
         ) -> npt.NDArray:  # shape (m, n)
+    assemblies = list(assemblies)
     reactions = list(reactions)
-    consumed_count = np.zeros(
-        (len(reactions), number_of_assems), dtype=int)
+    assem_to_index = {assem: i for i, assem in enumerate(assemblies)}
+
+    consumed_count = np.zeros((len(reactions), len(assemblies)), dtype=int)
+
     for i, reaction in enumerate(reactions):
         for assem in reaction.reactants:
-            consumed_count[i, assem] += 1
+            assem_index = assem_to_index[assem]
+            consumed_count[i, assem_index] += 1
+
     return consumed_count
 
 
 def calc_produced_count(
-        number_of_assems: int, reactions: Iterable[Reaction]
+        assemblies: Sequence[_T], reactions: Sequence[Reaction[_T, Any]]
         ) -> npt.NDArray:  # shape (m, n)
+    assemblies = list(assemblies)
     reactions = list(reactions)
-    produced_count = np.zeros(
-        (len(reactions), number_of_assems), dtype=int)
+    assem_to_index = {assem: i for i, assem in enumerate(assemblies)}
+
+    produced_count = np.zeros((len(reactions), len(assemblies)), dtype=int)
+
     for i, reaction in enumerate(reactions):
         for assem in reaction.products:
-            produced_count[i, assem] += 1
+            assem_index = assem_to_index[assem]
+            produced_count[i, assem_index] += 1
+
     return produced_count

@@ -1,11 +1,11 @@
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from typing import Protocol, TypeVar
 
 import numpy as np
 import numpy.typing as npt
 
 from .lib import calc_consumed_count, calc_produced_count
-from .reaction_class import Reaction, convert_reaction_to_use_index
+from .reaction_class import Reaction
 
 _T_co = TypeVar('_T_co', covariant=True)  # type of assembly
 _S_co = TypeVar('_S_co', covariant=True)  # type of reaction kind
@@ -22,7 +22,7 @@ class OdeRhs(Protocol):
 def create_ode_rhs(
         assemblies: Sequence[_T_co], 
         reaction_kinds: Sequence[_S_co],
-        reactions: Iterable[Reaction[_T_co, _S_co]],
+        reactions: Sequence[Reaction[_T_co, _S_co]],
         ) -> OdeRhs:
     """Create a function that calculates the right-hand side of the ODE.
 
@@ -39,35 +39,36 @@ def create_ode_rhs(
     reactions : Iterable[Reaction[_T_co, _S_co]]
         Reactions to be included in the ODE.
     """
-    assem_id_to_index = {assem: i for i, assem in enumerate(assemblies)}
-    reaction_kind_id_to_index = {
-        kind: i for i, kind in enumerate(reaction_kinds)}
-    reaction_by_index = [
-        convert_reaction_to_use_index(
-            reaction, assem_id_to_index, reaction_kind_id_to_index)
-        for reaction in reactions]
+    assemblies = list(assemblies)
+    reaction_kinds = list(reaction_kinds)
+    reactions = list(reactions)
     
+    assem_to_index = {assem: i for i, assem in enumerate(assemblies)}
+    rxn_kind_to_index = {kind: i for i, kind in enumerate(reaction_kinds)}
+    rxn_to_index = {reaction: i for i, reaction in enumerate(reactions)}
+
     # n: number of assemblies
     # m: number of reactions
     # k: number of reaction kinds
-    number_of_assems = len(assemblies)
-    assem_indices = np.arange(number_of_assems)
-    reaction_kind_indices = np.arange(len(reaction_kinds))
+    num_of_assems = len(assemblies)
+    num_of_rxns = len(reactions)
+    num_of_rxn_kinds = len(reaction_kinds)
     
     # shape: (m, k), dtype: bool
-    rxn_to_kind = np.array([
-        [reaction.reaction_kind == kind for kind in reaction_kinds]
-        for reaction in reaction_by_index])
+    rxn_to_kind = np.full((num_of_rxns, num_of_rxn_kinds), False)
+    for reaction, i in rxn_to_index.items():
+        rxn_kind_index = rxn_kind_to_index[reaction.reaction_kind]
+        rxn_to_kind[i, rxn_kind_index] = True
 
     # shape: (m,)
-    coefficients = np.array([
-        reaction.duplicate_count for reaction in reaction_by_index])
+    coefficients = np.full(num_of_rxns, np.nan)
+    for reaction, i in rxn_to_index.items():
+        coefficients[i] = reaction.duplicate_count
+    assert not np.isnan(coefficients).any()
     
     # shape: (m, n)
-    consumed = calc_consumed_count(
-        number_of_assems, reaction_by_index)  # shape: (m, n)
-    produced = calc_produced_count(
-        number_of_assems, reaction_by_index)  # shape: (m, n)
+    consumed = calc_consumed_count(assemblies, reactions)  # shape: (m, n)
+    produced = calc_produced_count(assemblies, reactions)  # shape: (m, n)
     change = produced - consumed  # shape: (m, n)
     
     # Note: `ode_rhs` should be as efficient as possible
