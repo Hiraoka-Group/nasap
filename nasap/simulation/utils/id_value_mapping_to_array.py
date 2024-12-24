@@ -7,7 +7,7 @@ import numpy.typing as npt
 _T = TypeVar('_T')
 
 
-def convert_id_value_dict_to_array(
+def convert_id_value_mapping_to_array(
         ids: Sequence[_T],
         id_to_value: Mapping[_T, float],
         *,
