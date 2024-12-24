@@ -1,9 +1,11 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 import pytest
 from scipy.integrate import solve_ivp
 
-from nasap.simulation import simulate_with_addition
+from nasap.simulation import (Addition, SimulationResult,
+                              simulate_solute_with_addition)
 
 
 # A -> B
@@ -26,76 +28,103 @@ def t0() -> float:
     return 0
 
 @pytest.fixture
-def y0() -> npt.NDArray:
-    return np.array([1, 0]) * 1e-3
+def solute0() -> npt.NDArray:
+    return np.array([1, 0]) * 1e-6  # 1 µmol, 0 µmol
+
+@pytest.fixture
+def vol0() -> float:
+    return 500 * 1e-6  # 500 µL
 
 @pytest.fixture
 def log_k_array() -> npt.NDArray:
     return np.array([-2])
 
 
-def test_without_addition(t, t0, y0, log_k_array):
+def test_without_addition(t, t0, solute0, vol0, log_k_array):
+    conc0 = solute0 / vol0
     sol = solve_ivp(
-        ode_rhs, [t0, t[-1]], y0, t_eval=t, args=(log_k_array,),
+        ode_rhs, [t0, t[-1]], conc0, t_eval=t, args=(log_k_array,),
         method='LSODA')
-    expected_y = sol.y.T
+    expected_conc = sol.y.T
+    expected_solute = expected_conc * vol0
 
-    y = simulate_with_addition(
-        ode_rhs, t, t0, y0, ode_rhs_args=(log_k_array,), addition=None,
+    result = simulate_solute_with_addition(
+        ode_rhs, t, t0, solute0, vol0, 
+        ode_rhs_args=(log_k_array,), additions=None,
         method='LSODA')
-    np.testing.assert_allclose(y, expected_y, rtol=1e-3)
+    
+    assert isinstance(result, SimulationResult)
+    np.testing.assert_allclose(result.t, t)
+    np.testing.assert_allclose(
+        result.solute, expected_solute, atol=1e-6, rtol=1e-3)
+    np.testing.assert_allclose(result.vol, vol0)
 
 
-def test_addition(y0, log_k_array):
+def test_addition(solute0, vol0, log_k_array):
     t = np.array([5, 10, 15, 20, 25, 30, 60, 120, 180, 300])
-    addition = {90.: np.array([1, 0]) * 1e-3}
+    addition = [Addition(90, np.array([1, 0]) * 1e-6, 10 * 1e-6)]
     first_t = np.array([5, 10, 15, 20, 25, 30, 60])
     second_t = np.array([120, 180, 300])
     
-    first_y0 = np.array([1, 0]) * 1e-3
+    first_solute0 = solute0
+    first_vol0 = vol0
+    first_conc0 = first_solute0 / first_vol0
     first_sol = solve_ivp(
-        ode_rhs, [0, first_t[-1]], first_y0, t_eval=first_t, 
+        ode_rhs, [0, first_t[-1]], first_conc0, t_eval=first_t, 
         args=(log_k_array,), method='LSODA')
-    first_y = first_sol.y.T
+    first_conc = first_sol.y.T
 
-    sol_for_y_at_90 = solve_ivp(
-        ode_rhs, [0, 90], first_y0, t_eval=np.array([90]),
+    sol_for_conc_at_90 = solve_ivp(
+        ode_rhs, [0, 90], first_conc0, t_eval=np.array([90]),
         args=(log_k_array,), method='LSODA')
-    y_just_before_addition = sol_for_y_at_90.y.T[0]
+    conc_just_before_addition = sol_for_conc_at_90.y.T[0]
+    solute_just_before_addition = conc_just_before_addition * first_vol0
 
-    y_just_after_addition = y_just_before_addition + addition[90]
+    solute_just_after_addition = (
+        solute_just_before_addition + np.array([1, 0]) * 1e-6)
+    vol_just_after_addition = first_vol0 + 10 * 1e-6
+    assert np.isclose(vol_just_after_addition, 510 * 1e-6)
+
+    conc_just_after_addition = (
+        solute_just_after_addition / vol_just_after_addition)
     second_sol = solve_ivp(
-        ode_rhs, [90, second_t[-1]], y_just_after_addition, 
+        ode_rhs, [90, second_t[-1]], conc_just_after_addition, 
         t_eval=second_t, args=(log_k_array,), method='LSODA')
-    second_y = second_sol.y.T
+    second_conc = second_sol.y.T
 
-    expected_y = np.vstack([first_y, second_y])
+    expected_conc = np.vstack([first_conc, second_conc])
+    expected_vol = np.array(
+        [500] * len(first_t) + [510] * len(second_t)) * 1e-6
+    expected_solute = expected_conc * expected_vol[:, None]
 
-    y = simulate_with_addition(
-        ode_rhs, t, 0, y0, ode_rhs_args=(log_k_array,), addition=addition,
-        method='LSODA')
+    result = simulate_solute_with_addition(
+        ode_rhs, t, 0, solute0, 500 * 1e-6, ode_rhs_args=(log_k_array,), 
+        additions=addition, method='LSODA')
+
+    assert isinstance(result, SimulationResult)
+    np.testing.assert_allclose(result.t, t)
+    np.testing.assert_allclose(
+        result.solute, expected_solute, atol=1e-6, rtol=1e-3)
+    np.testing.assert_allclose(result.vol, expected_vol)
     
-    assert len(y) == len(expected_y)
-    np.testing.assert_allclose(y, expected_y, atol=1e-6, rtol=1e-3)
 
-
-def test_addition_at_t0(y0, log_k_array):
+def test_addition_at_t0(solute0, vol0, log_k_array):
     t0 = 0
     t = np.array([5, 10])
-    addition = {t0: np.array([1, 0]) * 1e-3}  # Addition at t0
+    addition = [Addition(0, np.array([1, 0]) * 1e-3, 0)]
     with pytest.raises(ValueError):
-        simulate_with_addition(
-            ode_rhs, t, t0, y0, ode_rhs_args=(log_k_array,), addition=addition,
-            method='LSODA')
+        simulate_solute_with_addition(
+            ode_rhs, t, t0, solute0, vol0, ode_rhs_args=(log_k_array,), 
+            additions=addition, method='LSODA')
 
 
-def test_addition_at_time_in_t(t0, y0, log_k_array):
+def test_addition_at_time_in_t(t0, solute0, vol0, log_k_array):
     t = np.array([5, 10])
-    addition = {10: np.array([1, 0]) * 1e-3}
+    addition = [Addition(10, np.array([1, 0]) * 1e-3, 0)]
     with pytest.raises(ValueError):
-        simulate_with_addition(
-            ode_rhs, t, t0, y0, ode_rhs_args=(log_k_array,), addition=addition,
-            method='LSODA')
+        simulate_solute_with_addition(
+            ode_rhs, t, t0, solute0, vol0, ode_rhs_args=(log_k_array,), 
+            additions=addition, method='LSODA')
 
 
 if __name__ == '__main__':
