@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from typing import Protocol, TypeVar
 
 import numpy as np
@@ -22,7 +22,7 @@ class OdeRhs(Protocol):
 def create_ode_rhs(
         assemblies: Sequence[_T_co], 
         reaction_kinds: Sequence[_S_co],
-        reactions: Sequence[Reaction[_T_co, _S_co]],
+        reactions: Iterable[Reaction[_T_co, _S_co]],
         ) -> OdeRhs:
     """Create a function that calculates the right-hand side of the ODE.
 
