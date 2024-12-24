@@ -45,7 +45,6 @@ def create_ode_rhs(
     
     assem_to_index = {assem: i for i, assem in enumerate(assemblies)}
     rxn_kind_to_index = {kind: i for i, kind in enumerate(reaction_kinds)}
-    rxn_to_index = {reaction: i for i, reaction in enumerate(reactions)}
 
     # n: number of assemblies
     # m: number of reactions
@@ -56,13 +55,13 @@ def create_ode_rhs(
     
     # shape: (m, k), dtype: bool
     rxn_to_kind = np.full((num_of_rxns, num_of_rxn_kinds), False)
-    for reaction, i in rxn_to_index.items():
+    for i, reaction in enumerate(reactions):
         rxn_kind_index = rxn_kind_to_index[reaction.reaction_kind]
         rxn_to_kind[i, rxn_kind_index] = True
 
     # shape: (m,)
     coefficients = np.full(num_of_rxns, np.nan)
-    for reaction, i in rxn_to_index.items():
+    for i, reaction in enumerate(reactions):
         coefficients[i] = reaction.duplicate_count
     assert not np.isnan(coefficients).any()
     

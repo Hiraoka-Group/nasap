@@ -344,6 +344,31 @@ def test_str_assem_ids():
 
     checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     # parameters: t, y, log_k_of_rxn_kinds
+
+
+def test_duplicate_reactions():
+    # A -> B  (k)
+    # A -> B  (k)  exactly the same as the previous reaction
+    assemblies = ['A', 'B']
+    reactions = [
+        Reaction(
+            reactants=['A'], products=['B'], reaction_kind='AtoB', 
+            duplicate_count=1),
+        Reaction(
+            reactants=['A'], products=['B'], reaction_kind='AtoB',
+            duplicate_count=1)
+        ]
+    reaction_kinds = ['AtoB']
+
+    def expected_ode_rhs(t, y, log_k_of_rxn_kinds):
+        log_k, = log_k_of_rxn_kinds
+        k = 10**log_k
+        k_tot = 2 * k
+        return np.array([-k_tot * y[0], k_tot * y[0]])
+    
+    ode_rhs = create_ode_rhs(assemblies, reaction_kinds, reactions)
+
+    checker = OdeRhsEquivalenceChecker(ode_rhs, expected_ode_rhs)
     checker.check(0, np.array([1, 0]), np.array([0]))
     checker.check(0, np.array([0.5, 0.5]), np.array([0]))
     checker.check(0, np.array([1, 0]), np.array([2]))
