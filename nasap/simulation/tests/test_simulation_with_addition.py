@@ -4,8 +4,8 @@ import numpy.typing as npt
 import pytest
 from scipy.integrate import solve_ivp
 
-from nasap.simulation import (Addition, SimulationResult,
-                              simulate_solute_with_addition)
+from nasap.simulation import SimulationResult, simulate_solute_with_addition
+from nasap.simulation.addition import Addition
 
 
 # A -> B

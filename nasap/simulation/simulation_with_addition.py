@@ -1,25 +1,13 @@
 import warnings
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Any, Concatenate
+from typing import Concatenate
 
 import numpy as np
 import numpy.typing as npt
 from scipy.integrate import solve_ivp
 
-
-@dataclass
-class Addition:
-    time: float
-    solute_change: npt.NDArray
-    volume_change: float
-
-
-@dataclass
-class AliasAddition:
-    time: float
-    solute_change: Mapping[str, float]
-    volume_change: float
+from nasap.simulation.addition import Addition
 
 
 @dataclass
